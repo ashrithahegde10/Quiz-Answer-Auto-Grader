@@ -1,22 +1,22 @@
 # Quiz Answer Auto-Grader (DSA Project)
 
-## 📌 Overview
+##  Overview
 This project is a C-based automated grading system for short-answer quizzes. 
 It evaluates student answers by comparing them with model answers using efficient data structures.
 
-## 🚀 Key Features
+##  Key Features
 - Automatic short-answer grading
 - Word-level similarity matching
 - Partial credit scoring
 - Case-insensitive comparison
 - CSV file input support
 
-## 🧠 Data Structures Used
+##  Data Structures Used
 - **Array** – Stores questions and student responses
 - **Hash Map (with chaining)** – O(1) average lookup for question-answer mapping
 - **Trie** – Efficient word insertion and search (O(L))
 
-## ⚙️ Algorithm Approach
+##  Algorithm Approach
 1. Load model answers from `quiz.csv`
 2. Store answers in HashMap
 3. Insert model answer words into Trie
@@ -24,12 +24,12 @@ It evaluates student answers by comparing them with model answers using efficien
 5. Calculate similarity score:
    matched_words / total_model_words
 
-## 🏗 Tech Stack
+## 🏗Tech Stack
 - Language: C
 - File Handling: CSV
 - Data Structures: Array, HashMap, Trie
 
-## 📈 Time Complexity
+##  Time Complexity
 - HashMap Lookup: O(1) average
 - Trie Search: O(L) per word
 - Overall efficient for large datasets
