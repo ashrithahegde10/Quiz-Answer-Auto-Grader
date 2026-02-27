@@ -1,0 +1,21 @@
+Question,ModelAnswer
+What is a Stack?,A linear data structure that follows LIFO principle
+What is a Queue?,A linear data structure that follows FIFO principle
+Define Binary Search.,Efficient search algorithm that divides sorted array in half
+What is a Linked List?,A data structure with nodes containing data and pointer to next node
+What is Time Complexity?,Measure of time taken by algorithm as function of input size
+Define Hashing.,Technique to map data to fixed size values using hash function
+What is a Tree?,Non-linear hierarchical data structure with nodes connected by edges
+What is Big O Notation?,Mathematical notation to describe upper bound of algorithm complexity
+Define Recursion.,Function that calls itself to solve smaller instances of same problem
+What is a Graph?,Collection of vertices connected by edges
+What is Array?,Collection of elements stored in contiguous memory locations
+Define Sorting.,Process of arranging elements in specific order
+What is Binary Tree?,Tree structure where each node has at most two children
+What is Traversal?,Process of visiting all nodes in data structure
+Define Space Complexity.,Amount of memory used by algorithm as function of input size
+What is Heap?,Complete binary tree satisfying heap property
+What is DFS?,Graph traversal that explores as far as possible before backtracking
+What is BFS?,Graph traversal that explores neighbors before moving to next level
+What is Doubly Linked List?,Linked list where nodes have pointers to both next and previous nodes
+Define Queue Operations.,Enqueue adds element at rear and dequeue removes from front

@@ -1,0 +1,21 @@
+Question,StudentAnswer
+What is a Stack?,linear data structure following last in first out
+What is a Queue?,linear structure with first in first out
+Define Binary Search.,search algorithm dividing sorted array into half
+What is a Linked List?,data structure having nodes with data and next pointer
+What is Time Complexity?,time taken by an algorithm based on input size
+Define Hashing.,mapping data to fixed size using hash functions
+What is a Tree?,hierarchical non linear structure with connected nodes
+What is Big O Notation?,notation describing upper bound of complexity
+Define Recursion.,a function calling itself for smaller problem instances
+What is a Graph?,vertices connected with edges
+What is Array?,elements stored in contiguous memory
+Define Sorting.,arranging elements in particular order
+What is Binary Tree?,tree where node has maximum two children
+What is Traversal?,visiting every node in data structure
+Define Space Complexity.,memory used by algorithm based on input
+What is Heap?,complete binary tree with heap property
+What is DFS?,depth first search exploring far before backtrack
+What is BFS?,breadth first search exploring neighbors first
+What is Doubly Linked List?,linked list with next and previous pointers in nodes
+Define Queue Operations.,enqueue adds at rear dequeue removes from front

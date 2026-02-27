@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Auto-Grader</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Goudy Bookletter 1911", sans-serif;
+        background: linear-gradient(to top, #fdcbf1 0%, #fdcbf1 1%, #e6dee9 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: black;
+        font-family:"Georgia", serif; ;
+        margin-bottom: 40px;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+
+      .upload-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .upload-card {
+        background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .upload-card h2 {
+        font-family: serif;
+        color: #333;
+        background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+        margin-bottom: 20px;
+        font-size: 1.3em;
+      }
+
+      .upload-zone {
+        border: 3px dashed #667eea;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f8f9ff;
+        display: block;
+        position: relative;
+      }
+
+      .upload-zone:hover {
+        background: #eef1ff;
+        border-color: #764ba2;
+      }
+
+      .upload-zone.loaded {
+        border-color: #10b981;
+        background: #f0fdf4;
+        border-style: solid;
+      }
+
+      .upload-icon {
+        font-size: 3em;
+        margin-bottom: 10px;
+        color: #667eea;
+      }
+
+      .upload-text {
+        color: #666;
+        font-size: 1em;
+      }
+
+      .grade-button {
+        display: block;
+        margin: 0 auto 40px;
+        padding: 15px 50px;
+        font-size: 1.2em;
+        font-weight: bold;
+        color: white;
+        background: linear-gradient(to top, #30cfd0 0%, #330867 100%);
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s;
+      }
+
+      .grade-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+      }
+
+      .grade-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .results-section {
+        display: none;
+      }
+
+      .results-section.show {
+        display: block;
+      }
+
+      .score-card {
+        background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+        color: black;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .score-card h3 {
+        font-family: serif;
+        font-size: 1.5em;
+        margin-bottom: 5px;
+      }
+
+      .score-number {
+        font-size: 3.5em;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+
+      .results-container {
+        background: linear-gradient(to top, #f4f1f5 100%);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .results-container h3 {
+        font-family: serif;
+        color: #333;
+        font-size: 1.8em;
+        margin-bottom: 25px;
+      }
+
+      .question-card {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+      }
+
+      .question-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+      }
+
+      .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .question-title {
+        font-weight: 600;
+        color: #333;
+        flex: 1;
+      }
+
+      .score-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+
+      .score-badge.pass {
+        color: #10b981;
+      }
+
+      .score-badge.fail {
+        color: #ef4444;
+      }
+
+      .answers-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .answer-box {
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid;
+      }
+
+      .model-answer {
+        background: #f0fdf4;
+        border-color: #86efac;
+      }
+
+      .student-answer {
+        background: #eff6ff;
+        border-color: #93c5fd;
+      }
+
+      .answer-label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+      }
+
+      .answer-text {
+        color: #555;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 12px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s ease;
+      }
+
+      .progress-fill.pass {
+        background: #10b981;
+      }
+
+      .progress-fill.fail {
+        background: #ef4444;
+      }
+
+      .placeholder {
+        background: white;
+        border-radius: 15px;
+        padding: 80px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .placeholder-icon {
+        font-size: 5em;
+        color: #d1d5db;
+        margin-bottom: 20px;
+      }
+
+      .placeholder-text {
+        color: #6b7280;
+        font-size: 1.1em;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        .upload-section {
+          grid-template-columns: 1fr;
+        }
+
+        .answers-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header h1 {
+          font-size: 1.8em;
+        }
+
+        .score-number {
+          font-size: 2.5em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🏆 Quiz Auto-Grader</h1>
+        <p>DSA Project: HashMap + Trie Implementation</p>
+      </div>
+
+      <div class="upload-section">
+        <div class="upload-card">
+          <h2>📄 Model Answers</h2>
+          <label for="quizFile" class="upload-zone" id="quizZone">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text" id="quizText">Upload quiz.csv</div>
+          </label>
+          <input type="file" id="quizFile" accept=".csv" />
+        </div>
+
+        <div class="upload-card">
+          <h2>📝 Student Answers</h2>
+          <label for="studentFile" class="upload-zone" id="studentZone">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text" id="studentText">
+              Upload student_answers.csv
+            </div>
+          </label>
+          <input type="file" id="studentFile" accept=".csv" />
+        </div>
+      </div>
+
+      <button class="grade-button" id="gradeBtn" disabled>Grade Quiz</button>
+
+      <div class="results-section" id="resultsSection">
+        <div class="score-card">
+          <h3>Final Score</h3>
+          <p>Overall Performance</p>
+          <div class="score-number" id="finalScore">0%</div>
+          <div id="scoreDetails"></div>
+        </div>
+
+        <div class="results-container">
+          <h3>📊 Detailed Results</h3>
+          <div id="questionResults"></div>
+        </div>
+      </div>
+
+      <div
+        class="results-container"
+        id="summaryBox"
+        style="display: none; margin-top: 20px"
+      >
+        <h3>📈 Performance Summary</h3>
+        <div id="summaryContent"></div>
+      </div>
+
+      <div class="placeholder" id="placeholder">
+        <div class="placeholder-icon">🎯</div>
+        <div class="placeholder-text">
+          Upload both CSV files and click "Grade Quiz" to see results
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let quizData = null;
+      let studentData = null;
+
+      function parseCSV(text) {
+        const lines = text.trim().split("\n");
+        return lines.slice(1).map((line) => {
+          const values = line.split(",");
+          return {
+            question: values[0]?.trim(),
+            answer: values[1]?.trim(),
+          };
+        });
+      }
+
+      function toLowerCase(str) {
+        return str
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function matchScore(modelAns, studAns) {
+        const modelWords = toLowerCase(modelAns)
+          .split(/\s+/)
+          .filter((w) => w);
+        const studWords = toLowerCase(studAns)
+          .split(/\s+/)
+          .filter((w) => w);
+
+        const modelSet = new Set(modelWords);
+        let matched = 0;
+
+        studWords.forEach((word) => {
+          if (modelSet.has(word)) {
+            matched++;
+            modelSet.delete(word); // Remove to avoid counting duplicates
+          }
+        });
+
+        return modelWords.length ? matched / modelWords.length : 0;
+      }
+
+      document
+        .getElementById("quizFile")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              quizData = parseCSV(event.target.result);
+              document.getElementById(
+                "quizText"
+              ).textContent = `✓ ${quizData.length} questions loaded`;
+              document.getElementById("quizZone").classList.add("loaded");
+              checkBothLoaded();
+            };
+            reader.readAsText(file);
+          }
+        });
+
+      document
+        .getElementById("studentFile")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              studentData = parseCSV(event.target.result);
+              document.getElementById(
+                "studentText"
+              ).textContent = `✓ ${studentData.length} answers loaded`;
+              document.getElementById("studentZone").classList.add("loaded");
+              checkBothLoaded();
+            };
+            reader.readAsText(file);
+          }
+        });
+
+      function checkBothLoaded() {
+        if (quizData && studentData) {
+          document.getElementById("gradeBtn").disabled = false;
+        }
+      }
+
+      document
+        .getElementById("gradeBtn")
+        .addEventListener("click", function () {
+          this.textContent = "Grading...";
+          this.disabled = true;
+
+          setTimeout(() => {
+            gradeQuiz();
+            this.textContent = "Grade Quiz";
+            this.disabled = false;
+          }, 500);
+        });
+
+      async function gradeQuiz() {
+        try {
+          // First, save the uploaded CSVs to the server
+          // For now, we'll use the frontend processing but show it can be integrated
+
+          // Call the C backend
+          const response = await fetch("/cgi-bin/quizgrader_web.cgi", {
+            method: "GET",
+          });
+
+          if (!response.ok) {
+            throw new Error("Backend processing failed");
+          }
+
+          const data = await response.json();
+
+          // Format results for display
+          const results = data.results.map((r) => ({
+            question: r.question,
+            modelAnswer: r.modelAnswer,
+            studentAnswer: r.studentAnswer,
+            score: r.score * 10,
+            percentage: r.percentage.toFixed(2),
+          }));
+
+          displayResults(results);
+        } catch (error) {
+          console.error("Error:", error);
+          // Fallback to frontend processing
+          gradeQuizFrontend();
+        }
+      }
+
+      // Keep the original as fallback
+      function gradeQuizFrontend() {
+        const results = quizData.map((quiz, idx) => {
+          const student = studentData[idx];
+          const score = matchScore(quiz.answer, student?.answer || "");
+          return {
+            question: quiz.question,
+            modelAnswer: quiz.answer,
+            studentAnswer: student?.answer || "No answer",
+            score: score * 10,
+            percentage: (score * 100).toFixed(2),
+          };
+        });
+
+        displayResults(results);
+      }
+
+      function displayResults(results) {
+        const totalScore = results.reduce((sum, r) => sum + r.score, 0);
+        const maxScore = results.length * 10;
+        const percentage = ((totalScore / maxScore) * 100).toFixed(2);
+
+        document.getElementById("finalScore").textContent = `${percentage}%`;
+        document.getElementById(
+          "scoreDetails"
+        ).innerHTML = `<div style="font-size: 1.3em; margin-top: 10px;">${totalScore.toFixed(
+          2
+        )} / ${maxScore}</div>`;
+
+        const questionsHTML = results
+          .map(function (result, idx) {
+            const pass = result.percentage >= 70;
+            const passClass = pass ? "pass" : "fail";
+            const statusText = result.percentage + "% is correct";
+            return (
+              '<div class="question-card">' +
+              '<div class="question-header">' +
+              '<div class="question-title">Q' +
+              (idx + 1) +
+              ": " +
+              result.question +
+              "</div>" +
+              '<div class="score-badge ' +
+              passClass +
+              '">' +
+              statusText +
+              "</div>" +
+              "</div>" +
+              '<div class="answers-grid">' +
+              '<div class="answer-box model-answer">' +
+              '<div class="answer-label" style="color: #059669;">Model Answer:</div>' +
+              '<div class="answer-text">' +
+              result.modelAnswer +
+              "</div>" +
+              "</div>" +
+              '<div class="answer-box student-answer">' +
+              '<div class="answer-label" style="color: #2563eb;">Student Answer:</div>' +
+              '<div class="answer-text">' +
+              result.studentAnswer +
+              "</div>" +
+              "</div>" +
+              "</div>" +
+              '<div class="progress-bar">' +
+              '<div class="progress-fill ' +
+              passClass +
+              '" style="width: ' +
+              result.percentage +
+              '%"></div>' +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+
+        document.getElementById("questionResults").innerHTML = questionsHTML;
+        document.getElementById("placeholder").style.display = "none";
+        document.getElementById("resultsSection").classList.add("show");
+
+        // ADD THIS NEW CODE HERE:
+        // Calculate detailed statistics
+        const perfectAnswers = results.filter(
+          (r) => parseFloat(r.percentage) === 100
+        ).length;
+        const goodAnswers = results.filter(
+          (r) =>
+            parseFloat(r.percentage) >= 70 && parseFloat(r.percentage) < 100
+        ).length;
+        const averageAnswers = results.filter(
+          (r) => parseFloat(r.percentage) >= 35 && parseFloat(r.percentage) < 70
+        ).length;
+        const wrongAnswers = results.filter(
+          (r) => parseFloat(r.percentage) < 35
+        ).length;
+
+        // Show and populate summary box
+        document.getElementById("summaryBox").style.display = "block";
+        document.getElementById("summaryContent").innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 20px;">
+            <div style="background: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%); color: black;font-family: Georgia; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);">
+                <div style="font-size: 2.5em; font-weight: bold;">${
+                  results.length
+                }</div>
+                <div style="font-size: 1em; margin-top: 5px; opacity: 0.9;">Total Questions</div>
+            </div>
+            
+            <div style="background: linear-gradient(to top, #0fd850 0%, #f9f047 100%); color: black;font-family: Georgia; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);">
+                <div style="font-size: 2.5em; font-weight: bold;">🌟 ${perfectAnswers}</div>
+                <div style="font-size: 1em; margin-top: 5px; opacity: 0.9;">Perfect Answers</div>
+                <div style="font-size: 0.85em; margin-top: 3px; opacity: 0.8;">(100% Correct)</div>
+            </div>
+            
+            <div style="background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); color: black;font-family: Georgia; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);">
+                <div style="font-size: 2.5em; font-weight: bold;">✓ ${goodAnswers}</div>
+                <div style="font-size: 1em; margin-top: 5px; opacity: 0.9;">Good Answers</div>
+                <div style="font-size: 0.85em; margin-top: 3px; opacity: 0.8;">(70% - 99%)</div>
+            </div>
+            
+            <div style="background: linear-gradient(to right, #f83600 0%, #f9d423 100%);; color: black;font-family: Georgia; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);">
+                <div style="font-size: 2.5em; font-weight: bold;">⚠️ ${averageAnswers}</div>
+                <div style="font-size: 1em; margin-top: 5px; opacity: 0.9;">Needs Improvement</div>
+                <div style="font-size: 0.85em; margin-top: 3px; opacity: 0.8;">(35% - 69%)</div>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: black;font-family: Georgia; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);">
+                <div style="font-size: 2.5em; font-weight: bold;">✗ ${wrongAnswers}</div>
+                <div style="font-size: 1em; margin-top: 5px; opacity: 0.9;">Wrong Answers</div>
+                <div style="font-size: 0.85em; margin-top: 3px; opacity: 0.8;">(Below 35%)</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 25px; padding: 25px; background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); border-radius: 10px; color: black;font-family: Georgia; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <div style="font-size: 1.2em; opacity: 0.9;">Total Score</div>
+                    <div style="font-size: 3em; font-weight: bold; margin-top: 5px;">${percentage}%</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.5em; font-weight: bold;">
+                        ${
+                          percentage >= 90
+                            ? "🌟 Excellent (A+)"
+                            : percentage >= 80
+                            ? "🎉 Very Good (A)"
+                            : percentage >= 70
+                            ? "👍 Good (B)"
+                            : percentage >= 50
+                            ? "📚 Average (C)"
+                            : percentage >=40
+                            ? "⚠️ Below Average (D)"
+                            : "❌ Needs Improvement (F)"
+                        }
+                    </div>
+                    <div style="font-size: 1.1em; margin-top: 10px; opacity: 0.9;">
+                        ${totalScore.toFixed(2)} out of ${maxScore} points
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 20px; background: #f9fafb; border-radius: 10px; border-left: 4px solid #667eea;">
+            <div style="color: #374151;">
+                <strong style="font-size: 1.1em;">Performance Breakdown:</strong>
+                <div style="margin-top: 10px; display: grid; gap: 8px;">
+                    <div>✅ Perfect: ${perfectAnswers} questions (${(
+          (perfectAnswers / results.length) *
+          100
+        ).toFixed(1)}%)</div>
+                    <div>👍 Good: ${goodAnswers} questions (${(
+          (goodAnswers / results.length) *
+          100
+        ).toFixed(1)}%)</div>
+                    <div>⚠️ Needs Work: ${averageAnswers} questions (${(
+          (averageAnswers / results.length) *
+          100
+        ).toFixed(1)}%)</div>
+                    <div>❌ Wrong: ${wrongAnswers} questions (${(
+          (wrongAnswers / results.length) *
+          100
+        ).toFixed(1)}%)</div>
+                </div>
+            </div>
+        </div>
+    `;
+      }
+    </script>
+  </body>
+</html>
